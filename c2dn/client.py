@@ -2,7 +2,7 @@ import shutil
 import warnings
 import requests
 
-from io import BytesIO
+from io import StringIO
 from dataclasses import dataclass
 from urllib.parse import urljoin
 
@@ -63,7 +63,7 @@ class Clip2NetClient:
     def login(self) -> None:
         resp = self._session.get(urljoin(self.BASE_URL, self.LOGIN_URL))
         resp.raise_for_status()
-        html = parse(BytesIO(resp.content), parser=self._parser, base_url=self.BASE_URL)
+        html = parse(StringIO(resp.text), parser=self._parser, base_url=self.BASE_URL)
         pd = str(html.xpath('//form[@class="login-form"]/input[@name="pd"]/@value')[0])
         self._response = resp = self._session.post(urljoin(self.BASE_URL, self.MAIN_URL), params={
             'pd': pd, 'md': 'members', 'inst': '',
@@ -78,7 +78,7 @@ class Clip2NetClient:
             'inst': '',
         }, allow_redirects=True)
         resp.raise_for_status()
-        self._html = html = parse(BytesIO(resp.content), parser=self._parser, base_url=self.BASE_URL)
+        self._html = html = parse(StringIO(resp.text), parser=self._parser, base_url=self.BASE_URL)
         self._pd = str(html.xpath('//form[@id="submit_form"]/input[@name="pd"]/@value')[0])
 
     def logout(self) -> None:
@@ -122,7 +122,7 @@ class Clip2NetClient:
                 'gallery': f'/members.html#&page={page_idx}&sort_by=&folder_id={folder.uid}&type=&search=&after=&before=',
             })
             resp.raise_for_status()
-            html = parse(BytesIO(resp.content), parser=self._parser, base_url=self.BASE_URL)
+            html = parse(StringIO(resp.text), parser=self._parser, base_url=self.BASE_URL)
             with warnings.catch_warnings():
                 warnings.simplefilter(action='ignore', category=FutureWarning)
                 if not html.getroot():
