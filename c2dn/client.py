@@ -1,4 +1,5 @@
 import shutil
+import warnings
 import requests
 
 from io import BytesIO
@@ -7,7 +8,7 @@ from urllib.parse import urljoin
 
 from lxml.etree import HTMLParser, parse
 
-from typing import Self, Sequence, List
+from typing import Self, Sequence
 
 __all__ = [
     'Clip2NetClient', 'Clip2NetFolder', 'Clip2NetFile',
@@ -121,16 +122,22 @@ class Clip2NetClient:
             })
             resp.raise_for_status()
             html = parse(BytesIO(resp.content), parser=self._parser, base_url=self.BASE_URL)
-            if not html.getroot():
-                break
+            with warnings.catch_warnings():
+                warnings.simplefilter(action='ignore', category=FutureWarning)
+                if not html.getroot():
+                    break
             cnt, elements = 0, html.xpath('//li[@class="box-td kk"]')
             for node in elements:
                 uid = str(node.xpath('./@atrr_id')[0])
                 if uid not in unique:
                     name = str(node.xpath(f'.//span[@id="kk_{uid}_title"]/text()')[0]).strip()
-                    short_url = str(node.xpath('.//a[@class="box-item-pic"]/@href_s')[0])
-                    long_url = urljoin(self.BASE_URL, str(node.xpath('.//a[@class="box-item-pic"]/img/@src')[0]))
-                    result.append(Clip2NetFile(uid=uid, name=name, parent=folder, short_url=short_url, long_url=long_url))
+                    short_url = str(node.xpath('.//a[@class="box-item-pic"]/@href_s')[0]).replace('http://', 'https://')
+                    long_url = str(node.xpath('.//a[@class="box-item-pic"]/img/@src')[0])
+                    result.append(Clip2NetFile(
+                        uid=uid, name=name, parent=folder,
+                        short_url=short_url,
+                        long_url=urljoin(self.BASE_URL, long_url)
+                    ))
                 else:
                     cnt += 1
             if cnt == len(elements):
