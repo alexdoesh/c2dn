@@ -28,6 +28,7 @@ class Clip2NetFile:
     parent: Clip2NetFolder
     short_url: str
     long_url: str
+    timestamp: str
 
 
 class Clip2NetClient:
@@ -133,10 +134,12 @@ class Clip2NetClient:
                     name = str(node.xpath(f'.//span[@id="kk_{uid}_title"]/text()')[0]).strip()
                     short_url = str(node.xpath('.//a[@class="box-item-pic"]/@href_s')[0]).replace('http://', 'https://')
                     long_url = str(node.xpath('.//a[@class="box-item-pic"]/img/@src')[0])
+                    timestamp = str(node.xpath('.//div[@class="box-info-shot"]/text()')[0]).strip()
                     result.append(Clip2NetFile(
                         uid=uid, name=name, parent=folder,
                         short_url=short_url,
-                        long_url=urljoin(self.BASE_URL, long_url)
+                        long_url=urljoin(self.BASE_URL, long_url),
+                        timestamp=timestamp,
                     ))
                 else:
                     cnt += 1

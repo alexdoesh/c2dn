@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='c2dn',
-    version='0.1.1',
+    version='0.1.2',
     author='Alex Doe',
     author_email='alex@doe.sh',
     packages=find_packages(),

@@ -10,7 +10,7 @@ from tqdm import tqdm
 from c2dn.client import Clip2NetClient
 from c2dn.utils import slugify
 
-FIELDS = ('file_id', 'file_name', 'folder_id', 'folder_name', 'short_url', 'long_url', 'local_path')
+FIELDS = ('file_id', 'file_name', 'timestamp', 'folder_id', 'folder_name', 'short_url', 'long_url', 'local_path')
 
 
 def main(args: Optional[Sequence[str]] = None) -> None:
@@ -37,10 +37,16 @@ def main(args: Optional[Sequence[str]] = None) -> None:
                 for file in files:
                     print(f'\t{file.name} (id:{file.uid}) -> {file.short_url}, {file.long_url}')
                     file_name = slugify(file.name)
+                    if not file_name:
+                        if file.long_url.startswith('https://clip2net.com/clip/'):
+                            file_name = file.long_url.split('/')[-1]
+                        else:
+                            file_name = file.short_url.split('/')[-1]
                     local_path = Path(output_dir) / Path(file_name).with_suffix('.' + file.uid + Path(file_name).suffix)
                     csv_writer.writerow({
                         'file_id': file.uid,
                         'file_name': file.name,
+                        'timestamp': file.timestamp,
                         'folder_id': file.parent.uid,
                         'folder_name': file.parent.name,
                         'short_url': file.short_url,

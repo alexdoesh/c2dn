@@ -7,5 +7,5 @@ def slugify(value: str, allow_unicode: bool = False) -> str:
         value = unicodedata.normalize('NFKC', value)
     else:
         value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
-    value = re.sub(r'[^\w\s._-]', '', value)
+    value = re.sub(r'[^\w\s._-]', '', value.strip())
     return re.sub(r'[-\s]+', '-', value)
